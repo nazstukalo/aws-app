@@ -7,7 +7,7 @@ import random, string
 
 def randomword(length):
    letters = string.ascii_lowercase
-   return ''.join(random.choice(letters) for i in range(length))
+   return ''.join(random.choice(letters) for _ in range(length))
 
 boto3.setup_default_session(profile_name='naz')
 
@@ -21,9 +21,12 @@ bucket_name = randomword(5)
 s3.create_bucket(Bucket= bucket_name, CreateBucketConfiguration={
     'LocationConstraint': 'eu-west-1'})
 
+bucket_file = 'text_file.txt'
+downloaded_file = 'file.txt'
+uploaded_file = 'new_file.txt'
 # create the S3 object
 some_data = b'Here is some text'
-s3_object = s3.Object(bucket_name, 'text_file.txt')
+s3_object = s3.Object(bucket_name, bucket_file)
 s3_object.put(Body=some_data)
 
 # read data from the S3 object
@@ -31,12 +34,12 @@ object_body = s3_object.get()['Body'].read()
 print(object_body)
 
 # upload/download object
-s3.Bucket(bucket_name).download_file('text_file.txt', 'file.txt')
-s3.meta.client.upload_file('file.txt', bucket_name, 'new_file.txt')
+s3.Bucket(bucket_name).download_file(bucket_file, downloaded_file)
+s3.meta.client.upload_file(downloaded_file, bucket_name, uploaded_file)
 
 # delete object
-s3.Object(bucket_name, 'new_file.txt').delete()
-s3.Object(bucket_name, 'text_file.txt').delete()
+s3.Object(bucket_name, uploaded_file).delete()
+s3.Object(bucket_name, bucket_file).delete()
 
 #delete bucket
 s3.Bucket(bucket_name).delete()
